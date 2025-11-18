@@ -1,3 +1,100 @@
+# Why this fork?
+
+I recently bought an SPIISD v2 kit so that I could have a "hard drive" on my Apple //c.
+My use-case is to be able to save documents, photos, programs to a large storage, because
+floppies are... small.
+
+Upon testing, I was disappointed to see that the SPIISD v2 works great, in conjunction with
+ROM4x, when we boot the Apple //c from Smartport using the ROM4x menu, but that the drive
+was "invisible" when booting from the internal floppy disk drive.
+
+I was told this was a limitation of the Apple //c firmware, but could not believe it, as
+it was documented nowhere on Internet, and people back in the day would have had a hard time
+booting from an external hard disk drive without any means to initialize it.
+
+This is when the second disappointment happened: I wanted to investigate the problem, but when
+I bought the SPIISD v2, I missed the part in the documentation that says that the v2 firmware
+is closed-source. I doubt the legality of this, given that it seems heavily based on the v1.17
+firmware which is MIT-licensed, but that is not my main problem so far, as I so far had no
+copyright on v1.17. I was mostly annoyed that I couldn't debug anything further than looking
+at serial logs.
+
+I traced the PCB connections from the IDC-20 Smartport connector to the Nano, and the ones
+from the SD card module to the Nano, ignored the four buttons and the screen, and compared
+those to the gerber files for the v1 board (those are [here](SPSD_DIY_NANO_GERBER)).
+All connections matching, I flashed the v1.17 firmware on my v2 board, and started debugging.
+
+So far, this repository fixes my problem: the SPIISD board was booting too slowly, and
+missed the first Smartport RESET and ENABLE at cold boot, and so could not advertise its
+existence to the Apple //c.
+
+I solved it by reflashing the firmware using an AVR ISP mkII programmer, which bypasses the
+Arduino's bootloader. As this was not enough, I defer slow inits to after having replied to the
+computer.
+
+# I have an official SPIISD and the same problem, how do I fix it
+
+If you're here because you want your Apple IIc to see your SPIISD (v1 or v2) on cold boot,
+here are your options:
+
+- Hit Ctrl-Open-Apple-Reset one second after cold booting. This re-resets the Smartport bus,
+but this time the SPIISD is booted.
+- Power your SPIISD via an USB adapter, so that it's on before the //c
+- Flash this firmware to your board, using a programmer instead of the USB connection, to
+fix the root of the problem.
+
+*Warning*: If you flash this firmware on an SPIISD v2 board, you will lose the screen and
+buttons functionalities. If you flash this firmware on a v1 board, you will lose the "Eject"
+button that is used to switch the SPIISD's bootable image.
+
+In any case, backup your original firmware, using (via USB connection to the nano):
+```
+avrdude -c arduino -P /dev/ttyUSB0 -b 115200 -p m328p -U flash:r:SPIISD.orig.hex
+```
+
+If needed, you can restore it by first using the arduino IDE to reflash the bootloader:
+- Tools / Board : Arduino Nano
+- Tools / Processor : ATmega328P
+- Tools / Programmer: AVR ISP mkII (or whatever your programmer is)
+- Tools : Burn bootloader
+
+Then reflash the firmware using your backup:
+```
+avrdude -c arduino -P /dev/ttyUSB0 -b 115200 -p m328p -U flash:w:SPIISD.orig.hex
+```
+
+# Directions for this project
+
+I am not yet sure what I want to do with this project. I would like to have my
+firmware conform to my needs (for example, I need only one or two partitions, and
+I dislike seeing S2D1 and S2D2 when I won't use them). I would also like it to
+be a good, solid Smartport hard drive implementation that would benefit the
+community at large: while it is easy to find mass storage solutions for the
+slotted Apple IIs, there are far less options to the //c, and as far as I know,
+only one - the out-of-stock SPIISD v1 - is open-source.
+
+So, if people are interested in such a project, I'm in. I am bad at hardware,
+and while I can wire shit to the correct pins to make prototypes, I have zero
+experience at making PCBs and each time I try to learn it's a nightmare. I'm
+also bad at 3D printing and couldn't design and print an enclosure. But I'm
+quite good at software.
+
+So far, only huge nerds can use this firmware: it requires competency in Arduino
+flashing *and* in what to do to transform gerber files into PCBs: the v1 board
+is out of stock at Kero Mac Mods store, and the PCB is licensed under the CC-BY-NC-SA,
+which prohibits others to step up, have some built and sell them to the community.
+(Or, you could by a v2 board and use this firmware. Still, it's not as easy as
+it should).
+
+So what I would love to is to design a new PCB, MIT-licensed too, so that anyone
+interested could build and sell them. Probably not me, I don't want to turn my
+hobby into work.
+
+Then I would like to fix/add features, maybe:
+- fix the Eject button so that one can rotate their bootable image
+- a jumper block to select 1, 2 or 4 partitions possible
+- a clean-room implementation of a basic image selection UI
+
 # SPIISD DIY KIT
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 <br>
@@ -133,4 +230,3 @@ This SPIISD hardware is licensed under a
 [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 Ⓒ 2023 Kay Koba, Kero's mac Mods, All rights reserved.
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-

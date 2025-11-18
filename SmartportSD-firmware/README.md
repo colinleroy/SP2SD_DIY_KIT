@@ -10,11 +10,11 @@ version 1.17: Improved version by Wing Yeung from [MFA2 work shop](http://www.mf
 
 ## Get the programs
 
-Download it on [SPIISD](https://github.com/kerokero5150/SP2SD_DIY_KIT)'s Github. Copy and use the "SmartportSD-1.16" folder as is.
+Download or git clone the source to this project. Copy and use the "SmartportSD-firmware" folder as is.
 
 ## Get the dependencies
 
-Download the latest version of the [SdFat Arduino library](https://github.com/greiman/SdFat/) and install it in your Arduino libraries folder (that location is system-dependent so you'll have to figure out where it is for you, sorry).
+Download the 2.1.2 version of the [SdFat Arduino library](https://github.com/greiman/SdFat/) and install it in your Arduino libraries folder (that location is system-dependent so you'll have to figure out where it is for you, sorry).
 
 ## Compile and upload the code to the Arduino
 
@@ -24,9 +24,12 @@ Follow the instructions on [Robert's page](http://www.users.on.net/~rjustice/Sma
 
 ### WARNING
 
-Don't connect the Arduino USB and the +5V power to the Apple computer at the same time! Doing so could lead to a situation where +5V is backfeeding into the Apple from the Arduino, which is bad. 
+Don't connect the Arduino USB and the +5V power to the Apple computer at the same time! Doing so could lead to a situation where +5V is backfeeding into the Apple from the Arduino, which is bad.
 
-If you plan on doing development work on this, or just want to watch the Arduino serial console for error messages, disconnect the +5V connection between the Apple II and the Arduino and power it only via the USB port. 
+If you plan on doing development work on this, or just want to watch the Arduino serial console for error messages, disconnect the +5V connection between the Apple II and the Arduino and power it only via the USB port.
+
+If you use the v1 or v2 PCBs from Kero Mac Mods, there is a diode preventing this
+from happening, so it's possible in this case.
 
 #### Technical details
 The Apple needs more than the 500mA your modern computer's USB power supply can provide to boot up, plus it needs some other voltages as well. You could end up burning out your Arduino, your USB port, your Apple, or all of the above! (The most likely thing to happen is the USB port might shut off, or the Arduino will get hot and annoyed, though).
@@ -62,7 +65,6 @@ That's it, turn on the machine and it should boot from PART1.PO!
 
 Please report bugs or comment on the above via the GitLab issues page for the project.
 
-April 27, 2024, Ver 1.16 edited by Kay Koba, Kero's Mac Mods 
+April 27, 2024, Ver 1.16 edited by Kay Koba, Kero's Mac Mods
 
 (C) SmartportSD Project
- 
