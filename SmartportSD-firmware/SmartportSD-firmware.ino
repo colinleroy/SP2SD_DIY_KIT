@@ -78,7 +78,18 @@
 
 #define NUM_PARTITIONS  4          // Number of 32MB Prodos partions supported
 
+#define LOG(str) do {         \
+  Serial.print(micros());     \
+  Serial.print(F("µs - "));   \
+  Serial.println(str);        \
+} while(0)
 
+#define LOGN(str, num, enc) do {  \
+  Serial.print(micros());         \
+  Serial.print(F("µs - "));       \
+  Serial.print(str);              \
+  Serial.println(num, enc);       \
+} while(0)
 
 void encode_data_packet (unsigned char source);   //encode smartport 512 byte data packet
 int  decode_data_packet (void);                   //decode smartport 512 byte data packet
@@ -113,14 +124,6 @@ struct device{
 
 device devices[NUM_PARTITIONS];
 
-enum uiState{
-  smartport,
-  gotch,
-  startup
-};
-
-uiState state=startup;
-
 //The circuit:
 //    SD card attached to SPI bus as follows:
 // ** MOSI - pin 11 on Arduino Uno/Duemilanove/Diecimila
@@ -136,7 +139,6 @@ uiState state=startup;
 // Adafruit SD shields and modules: pin 10
 
 const uint8_t chipSelect = 10;
-const uint8_t ejectPin = 17;
 const uint8_t statusledPin = 18;
 
 /*
@@ -151,7 +153,7 @@ SdFat sdcard;
 //------------------------------------------------------------------------------
 
 
-static void log_io_err(const char *op, int partition, int block_num) {
+static void log_io_err(const __FlashStringHelper *op, int partition, int block_num) {
   Serial.print(op);
   Serial.print(F(" error on partition "));
   Serial.print((partition + initPartition) % NUM_PARTITIONS);
@@ -161,18 +163,18 @@ static void log_io_err(const char *op, int partition, int block_num) {
 
 static int sd_init_done = 0;
 static void late_init(void) {
-  Serial.println(F("SmartportSD v1.18"));
-  Serial.print(F("Boot partition: "));
-  Serial.println(initPartition, DEC);
+  LOG(F("SmartportSD v1.18"));
+  LOGN(F("Boot partition: "), initPartition, DEC);
 
-  Serial.print(F("Free memory before opening images: "));
-  Serial.println(freeMemory(), DEC);
+  LOGN(F("Free memory before opening images: "), freeMemory(), DEC);
 
+  // Not enough RAM for SDFat to open a file if the packet_buffer
+  // is allocated.
   free(packet_buffer);
 
   if(!sd_init_done) {
     if (!sdcard.begin(chipSelect, SPI_HALF_SPEED)) {
-      Serial.print(F("\r\nError init card"));
+      LOG(F("Error init card"));
       led_err();
     } else {
       sd_init_done = 1;
@@ -181,6 +183,7 @@ static void late_init(void) {
 
   SdFile myFile("config.txt", O_READ);
   // check for open error
+  LOG(F("Opening partitions"));
   if (myFile.isOpen()) {
     unsigned char n;
     packet_buffer = (unsigned char *)malloc(100);
@@ -190,12 +193,11 @@ static void late_init(void) {
         if (packet_buffer[n - 1] == '\n') {
           packet_buffer[n-1] = 0;
         }
-        Serial.print(F("Opening "));
-        Serial.println((char*)packet_buffer);
+        LOG((char*)packet_buffer);
 
         open_image(devices[i],(char*)packet_buffer);
         if(!devices[i].sdf.isOpen()){
-          Serial.println(F("Image open error!"));
+          LOG(F("Image open error!"));
         }
         else {
           if ((packet_buffer[n-4]=='2')&&((packet_buffer[n-3]&0xdf)=='M')&&((packet_buffer[n-2]&0xdf)=='G')) {
@@ -206,8 +208,8 @@ static void late_init(void) {
           }
         }
       } else {
-        Serial.println(F("Resetting boot partition to 0"));
         if (initPartition > i) {
+          LOG(F("Resetting boot partition to 0"));
           initPartition = 0;
         }
         break;
@@ -218,22 +220,23 @@ static void late_init(void) {
     myFile.close();
   } else {
     Serial.println(F("No config.txt. Searching for images."));
-    for(unsigned char i = 0; i < NUM_PARTITIONS; i++) {
+    for (unsigned char i = 0; i < NUM_PARTITIONS; i++) {
       String prefix = "PART";
       open_image(devices[i], prefix+(i+1)+".po");
-      if(!devices[i].sdf.isOpen()){
+      if (!devices[i].sdf.isOpen()) {
         Serial.println(F("Can not open."));
       } else {
         Serial.println(F("Opened."));
       }
     }
   }
-  Serial.print(F("Free memory now "));
-  Serial.println(freeMemory(), DEC);
+  LOGN(F("Free memory now "), freeMemory(), DEC);
+
+  // Realloc standard packet_buffer
   packet_buffer = (unsigned char *)malloc(605);
 }
 
-void setup(void) {
+void setup (void) {
   digitalWrite(statusledPin, HIGH);
   // Input/Output Ports initialization
   PORT_ACK = 0xFF;
@@ -247,13 +250,11 @@ void setup(void) {
   // Analog Comparator initialization
   ACSR = 0x80;
 
-  pinMode(ejectPin, INPUT);
-
   // Serial init
   Serial.begin(230400);
   initPartition = eeprom_read_byte(0);
   if (initPartition == 0xFF) initPartition = 0;
-  initPartition = (initPartition % 4);
+  initPartition = (initPartition % NUM_PARTITIONS);
 
   packet_buffer = (unsigned char *)malloc(605);
   digitalWrite(statusledPin, LOW);
@@ -269,18 +270,13 @@ void setup(void) {
 
 
 void loop() {
-
-  // put your main code here, to run repeatedly:
-
   unsigned long int block_num;
   unsigned char LBH, LBL, LBN, LBT, LBX;
 
   int number_partitions_initialised = 0;
-  int noid = 0;
-  int count;
-  int ui_command;
   bool sdstato;
   unsigned char source, status, phases, status_code;
+  int not_mine = 0;
 
   DDRD = 0x00;
 
@@ -288,13 +284,10 @@ void loop() {
   PORT_REQ &= ~(_BV(PIN_REQ));
   interrupts();
 
+  LOG("Entering main loop");
+
+  not_mine = 0;
   while (1) {
-    state = smartport;
-
-    //FIXME find v2's pin for middle button
-    //if (digitalRead(ejectPin) == HIGH) rotate_boot();
-
-    noid = 0;  //reset noid flag
     DDRC = 0xDF; //set ack (wrprot) to input to avoid clashing with other devices when sp bus is not enabled
 
     // read phase lines to check for smartport reset or enable
@@ -306,7 +299,7 @@ void loop() {
       // ph3=0 ph2=1 ph1=0 ph0=1
 
       case 0b00000101:
-        Serial.println(F("SP BUS RESET"));
+        LOG(F("SP BUS RESET"));
 
         // monitor phase lines for reset to clear
         while ((PIND & 0x3c) >> 2 == 0x05);
@@ -314,7 +307,7 @@ void loop() {
         //reset number of partitions init'd
         number_partitions_initialised = 0;
 
-        noid = 0;   // to check if needed
+        not_mine = 0;
 
         //clear device_id table
         for (partition = 0; partition < NUM_PARTITIONS; partition++) {
@@ -337,22 +330,19 @@ void loop() {
           break;     //error timeout, break and loop again
         }
 
-        Serial.print("SP BUS ENABLE, code ");
-        Serial.println(packet_buffer[14], HEX);
+        LOGN(F("SP BUS ENABLE, code "), packet_buffer[14], HEX);
 
         // lets check if the pkt is for us
         if (packet_buffer[14] != 0x85)  // if its an init pkt, then assume its for us and continue on
         {
-          //Serial.print(F("\r\nNot 0x85!"));
           // check if its our one of our id's
           for  (partition = 0; partition < NUM_PARTITIONS; partition++)
           {
             if ( devices[(partition + initPartition) % NUM_PARTITIONS].device_id != packet_buffer[6])  //destination id
-              noid++;
+              not_mine++;
           }
 
-          if (noid == NUM_PARTITIONS)  //not one of our id's
-          {
+          if (not_mine == NUM_PARTITIONS) { //not one of our id's
             delay(100);
             Serial.println(F("Not our ID!"));
 
@@ -367,23 +357,15 @@ void loop() {
               case 0x83:  //is a format cmd
               case 0x81:  //is a readblock cmd
                 while (!(PINC & 0x20));   //wait till high
-                //Serial.print(F("A ")) );
                 while (PINC & 0x20);      //wait till low
-                //Serial.print(F(("a ")) );
                 while (!(PINC & 0x20));  //wait till high
-                //Serial.print(F(("A\r\n")) );
                 break;
               case 0x82:  //is a writeblock cmd
                 while (!(PINC & 0x20));   //wait till high
-                //Serial.print(F(("W ")) );
                 while (PINC & 0x20);      //wait till low
-                //Serial.print(F(("w ")) );
                 while (!(PINC & 0x20));   //wait till high
-                //Serial.print(F("W\r\n")) );
                 while (PINC & 0x20);      //wait till low
-                //Serial.print(F(("w ")) );
                 while (!(PINC & 0x20));   //wait till high
-                //Serial.print(F("W\r\n") );
                 break;
             }
             break;  //not one of ours
@@ -403,7 +385,7 @@ void loop() {
         switch (packet_buffer[14]) {
 
           case 0x80:  //is a status cmd
-            Serial.println("SP STATUS");
+            Serial.println(F("SP STATUS"));
             digitalWrite(statusledPin, HIGH);
             source = packet_buffer[6];
             for (partition = 0; partition < NUM_PARTITIONS; partition++) { //Check if its one of ours
@@ -451,8 +433,7 @@ void loop() {
                 //yes it is, then reply
 
                 status_code = (packet_buffer[21] & 0x7f);
-                Serial.print(F("Extended Status CMD:"));
-                Serial.println(status_code, HEX);
+                LOGN(F("Extended Status CMD:"), status_code, HEX);
                 print_packet ((unsigned char*) packet_buffer,packet_length());
                 if (status_code == 0x03) { // if statcode=3, then status with device info block
                   Serial.println(F("Extended status DIB - Not implemented!"));
@@ -494,14 +475,14 @@ void loop() {
 
                 if(devices[(partition + initPartition) % NUM_PARTITIONS].sdf.isOpen()) {
                   if (!devices[(partition + initPartition) % NUM_PARTITIONS].sdf.seekSet(block_num*512+devices[(partition + initPartition) % NUM_PARTITIONS].header_offset)) {
-                    log_io_err("Seek", partition, block_num);
+                    log_io_err(F("Seek"), partition, block_num);
                   }
                 }
 
                 //Reading block from SD Card
                 sdstato = devices[(partition + initPartition) % NUM_PARTITIONS].sdf.read((unsigned char*) packet_buffer, 512);
                 if (!sdstato) {
-                  log_io_err("Read", partition, block_num);
+                  log_io_err(F("Read"), partition, block_num);
                 }
                 encode_data_packet(source);
 
@@ -548,12 +529,12 @@ void loop() {
                   digitalWrite(statusledPin, HIGH);
 
                   if (!devices[(partition + initPartition) % NUM_PARTITIONS].sdf.seekSet(block_num*512+devices[(partition + initPartition) % NUM_PARTITIONS].header_offset)){
-                    log_io_err("Seek", partition, block_num);
+                    log_io_err(F("Seek"), partition, block_num);
                   }
                   // Write block to SD Card
                   sdstato = devices[(partition + initPartition) % NUM_PARTITIONS].sdf.write((unsigned char*) packet_buffer, 512);
                   if (!sdstato) {
-                    log_io_err("Write", partition, block_num);
+                    log_io_err(F("Write"), partition, block_num);
                     status = 6;
                   }
                 }
@@ -586,16 +567,12 @@ void loop() {
           case 0x85:  //is an init cmd
             source = packet_buffer[6];
 
-            Serial.print("i");
             devices[(number_partitions_initialised + initPartition) % NUM_PARTITIONS].device_id = source; //remember source id for partition
             number_partitions_initialised++;
 
             if (number_partitions_initialised < NUM_PARTITIONS) { //are all init'd yet
-              Serial.print(number_partitions_initialised);
               status = 0x80;         //no, so status=0
-            }
-            else if (number_partitions_initialised == NUM_PARTITIONS) { // the last one
-              Serial.println(number_partitions_initialised);
+            } else { // the last one
               status = 0xff;         //yes, so status=non zero
             }
 
@@ -610,8 +587,7 @@ void loop() {
             if (number_partitions_initialised == NUM_PARTITIONS) {
               late_init();
               for (partition = 0; partition < NUM_PARTITIONS; partition++) {
-                Serial.print(F("Drive: "));
-                Serial.println(devices[(partition + initPartition) % NUM_PARTITIONS].device_id, HEX);
+                LOGN(F("Drive: "), devices[(partition + initPartition) % NUM_PARTITIONS].device_id, HEX);
               }
             }
             break;
@@ -1292,14 +1268,14 @@ void print_packet (unsigned char* data, int bytes)
 
   Serial.print(F("\r\n"));
   for (count = 0; count < bytes; count = count + 16) {
-    sprintf(tbs, ("%04X: "), count);
+    sprintf(tbs, "%04X: ", count);
     Serial.print(tbs);
     for (row = 0; row < 16; row++) {
       if (count + row >= bytes)
         Serial.print(F("   "));
       else {
         Serial.print(data[count + row], HEX);
-        Serial.print(" ");
+        Serial.print(F(" "));
       }
     }
     Serial.print(F("-"));
@@ -1348,7 +1324,7 @@ int rotate_boot (void)
     Serial.print(F("\r\nInit partition was: "));
     Serial.println(initPartition, DEC);
     initPartition++;
-    initPartition = initPartition % 4;
+    initPartition = initPartition % NUM_PARTITIONS;
     //Find the next partition that's available
     //and set it to be the boot partition
     if(devices[initPartition].sdf.isOpen()){
