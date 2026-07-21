@@ -44,6 +44,11 @@ Connect your Arduino Nano to the programmer's 6-pin connector. The red
 wire of the connector must be towards the Nano's `VIN` pin.
 ![The Arduino Nano, connected to the programmer](../build_instructions/pictures/arduino_flashing_connection.jpeg "The Arduino Nano, connected to the programmer")
 
+For the Dominodisk, the procedure is the same. Open the Dominodisk enclosure to
+locate the programming header, and connect it:
+![The Dominodisk, connected to the programmer](../build_instructions/pictures/domino-upgrade.jpg "The Dominodisk, connected to the programmer")
+
+
 Two options here too:
 - From the Arduino IDE, `Sketch` menu, choose `Upload using programmer`. Wait
   until the "Done uploading" message.

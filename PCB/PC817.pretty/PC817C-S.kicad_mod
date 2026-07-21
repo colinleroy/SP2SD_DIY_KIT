@@ -1,0 +1,270 @@
+(footprint "PC817C-S"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "SOP, 4 Pin (https://www.littelfuse.com/assetdocs/littelfuse-integrated-circuits-cpc1017n-datasheet?assetguid=b4f177f1-629f-4104-97a5-8b8d709e83de), generated with kicad-footprint-generator ipc_gullwing_generator.py")
+	(tags "SOP SO")
+	(property "Reference" "U1"
+		(at -0.02 -2.93 180)
+		(layer "F.SilkS")
+		(uuid "21d72faf-6842-400e-b828-00d84517af12")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "PC817C-S"
+		(at 0 3 180)
+		(layer "F.Fab")
+		(uuid "f4ed225c-073c-451c-8ee6-f9deed88bcda")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf"
+		(at 0 0 180)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "be0f091f-7b1e-4e87-a42e-c8749d1d5bce")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 180)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "834134af-f63f-46e2-b880-4364e74f2185")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "LCSC" "C3008369"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "95729bae-f837-42e2-9fc7-cc13fa6f2e39")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -2.01 -2.16)
+		(end 2.01 -2.16)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "4ef3b4ea-4926-40f2-8e9c-1f20f861ccb2")
+	)
+	(fp_line
+		(start -2.01 -1.805)
+		(end -2.01 -2.16)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "4f683819-2bb4-46c7-95d3-849a3ce58010")
+	)
+	(fp_line
+		(start -2.01 2.16)
+		(end -2.01 1.805)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "47dfee7a-6bd0-4943-9408-102076f0242c")
+	)
+	(fp_line
+		(start 2.01 -2.16)
+		(end 2.01 -1.805)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "cac5c939-2fce-4b68-a2f5-8b99a6adfeb0")
+	)
+	(fp_line
+		(start 2.01 1.805)
+		(end 2.01 2.16)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "c7ea6b44-8bd0-4668-9ae6-dd70eed1c043")
+	)
+	(fp_line
+		(start 2.01 2.16)
+		(end -2.01 2.16)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "16404ed7-c9dc-4c17-bdfa-6b398f14dddb")
+	)
+	(fp_poly
+		(pts
+			(xy -4.67 -2.37) (xy -5.01 -2.84) (xy -4.33 -2.84)
+		)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.SilkS")
+		(uuid "cfe0be80-1c6a-4b1f-b3bc-627bab6b3954")
+	)
+	(fp_rect
+		(start -5.78 -2.23)
+		(end 5.47 2.26)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "83bb6e4d-dfac-4db0-949c-b88dbef7fefd")
+	)
+	(fp_poly
+		(pts
+			(xy -1.9 -1.1) (xy -1.9 2.05) (xy 1.9 2.05) (xy 1.9 -2.05) (xy -0.95 -2.05)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "20ca22d4-d63c-49bd-a267-ed288a947966")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 270)
+		(layer "F.Fab")
+		(uuid "6636ca93-ee64-4a65-8041-f0d784bd84cb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd roundrect
+		(at -4.65 -1.36)
+		(size 1.995 1.24)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(teardrops
+			(best_length_ratio 0.5)
+			(max_length 1)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curved_edges no)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections yes)
+		)
+		(uuid "01b0be11-d200-42bd-86b4-27d8dee21773")
+	)
+	(pad "2" smd roundrect
+		(at -4.65 1.33)
+		(size 2.115 1.29)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(teardrops
+			(best_length_ratio 0.5)
+			(max_length 1)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curved_edges no)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections yes)
+		)
+		(uuid "23e1c7f0-3265-4071-86f5-7977af02485d")
+	)
+	(pad "3" smd roundrect
+		(at 4.35 1.27)
+		(size 1.965 1.33)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(teardrops
+			(best_length_ratio 0.5)
+			(max_length 1)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curved_edges no)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections yes)
+		)
+		(uuid "dfb259a2-1b06-43d4-8077-36c8834276d4")
+	)
+	(pad "4" smd roundrect
+		(at 4.38 -1.36)
+		(size 1.905 1.28)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(teardrops
+			(best_length_ratio 0.5)
+			(max_length 1)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curved_edges no)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections yes)
+		)
+		(uuid "95883823-b01c-4621-a61c-aacb09687d20")
+	)
+	(embedded_fonts no)
+	(model "${KICAD9_3DMODEL_DIR}/Package_SO.3dshapes/SOP-4_3.8x4.1mm_P2.54mm.step"
+		(hide yes)
+		(offset
+			(xyz 0 0 1.5)
+		)
+		(scale
+			(xyz 1.7 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -0)
+		)
+	)
+	(model "/home/colin/Documents/git-oss/BurgerDisk/PCB/PC817_SMT.step"
+		(offset
+			(xyz 0 0 2.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 -0)
+		)
+	)
+)
